@@ -1,4 +1,8 @@
 (function () {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
+
   const counterElement = document.getElementById('view-count');
   const SESSION_KEY = 'site_view_registered';
 

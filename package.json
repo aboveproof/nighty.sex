@@ -1,14 +1,10 @@
 {
   "name": "nighty-sex-viewer",
   "version": "1.0.0",
-  "description": "Image viewer web application with persistent visit counter",
-  "main": "server.js",
-  "type": "commonjs",
+  "description": "Image viewer web application",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js"
+  }
 }

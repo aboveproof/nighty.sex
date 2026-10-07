@@ -5,6 +5,7 @@ const url = require('node:url');
 const viewsHandler = require('./api/views');
 
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -22,7 +23,7 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
-  // Delegate /api/views to the serverless function handler
+  // Delegate /api/views to serverless function
   if (pathname === '/api/views') {
     req.query = parsedUrl.query;
     res.status = (code) => {
@@ -42,13 +43,13 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Rewrite / and /asset to index.html (matches vercel.json)
+  // Rewrite / and /asset to public/index.html (matches vercel.json)
   let filePath;
   if (pathname === '/' || pathname === '/asset' || pathname === '/asset/' || pathname === '/index.html') {
-    filePath = path.join(__dirname, 'index.html');
+    filePath = path.join(PUBLIC_DIR, 'index.html');
   } else {
     const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
-    filePath = path.join(__dirname, safePath);
+    filePath = path.join(PUBLIC_DIR, safePath);
   }
 
   fs.stat(filePath, (err, stats) => {
@@ -68,5 +69,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log(`Local dev server listening on http://localhost:${PORT}`);
 });
