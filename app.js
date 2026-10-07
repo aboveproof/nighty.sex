@@ -6,43 +6,45 @@
     const alreadyCounted = sessionStorage.getItem(SESSION_KEY);
     let count = null;
 
-    // 1. Try public Abacus counter API (supports GitHub Pages static hosting)
+    // 1. Fetch from native Vercel /api/views endpoint
     try {
-      const action = alreadyCounted ? 'get' : 'hit';
-      const res = await fetch(`https://abacus.jasoncameron.dev/${action}/nighty.sex/views`, {
-        headers: { Accept: 'application/json' }
-      });
+      const endpoint = alreadyCounted ? '/api/views' : '/api/views?inc=1';
+      const res = await fetch(endpoint);
       if (res.ok) {
         const data = await res.json();
-        if (typeof data.value === 'number') {
-          count = data.value;
+        if (typeof data.views === 'number') {
+          count = data.views;
           if (!alreadyCounted) {
             sessionStorage.setItem(SESSION_KEY, 'true');
           }
         }
       }
-    } catch (e) {
-      console.warn('Public counter unavailable, falling back:', e);
+    } catch (err) {
+      console.warn('API endpoint unavailable, falling back:', err);
     }
 
-    // 2. Fallback to local server API when hosted locally
+    // 2. Direct public counter fallback
     if (count === null) {
       try {
-        const endpoint = alreadyCounted ? '/api/views' : '/api/views?inc=1';
-        const res = await fetch(endpoint);
+        const action = alreadyCounted ? 'get' : 'hit';
+        const res = await fetch(`https://abacus.jasoncameron.dev/${action}/nighty.sex/views`, {
+          headers: { Accept: 'application/json' }
+        });
         if (res.ok) {
           const data = await res.json();
-          count = Number(data.views) || 0;
-          if (!alreadyCounted) {
-            sessionStorage.setItem(SESSION_KEY, 'true');
+          if (typeof data.value === 'number') {
+            count = data.value;
+            if (!alreadyCounted) {
+              sessionStorage.setItem(SESSION_KEY, 'true');
+            }
           }
         }
-      } catch (e) {
-        console.warn('Local counter unavailable:', e);
+      } catch (err) {
+        console.warn('Public counter fallback failed:', err);
       }
     }
 
-    // 3. Fallback to localStorage
+    // 3. Local storage fallback
     if (count === null) {
       const local = Number(localStorage.getItem('nighty_views') || 0) + (alreadyCounted ? 0 : 1);
       localStorage.setItem('nighty_views', local);

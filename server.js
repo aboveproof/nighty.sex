@@ -2,9 +2,9 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const url = require('node:url');
+const viewsHandler = require('./api/views');
 
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data', 'views.json');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -18,77 +18,38 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-function readViews() {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ views: 0 }, null, 2));
-      return 0;
-    }
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    return Number(parsed.views) || 0;
-  } catch (err) {
-    console.error('Error reading views:', err);
-    return 0;
-  }
-}
-
-function writeViews(count) {
-  try {
-    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ views: count }, null, 2));
-  } catch (err) {
-    console.error('Error writing views:', err);
-  }
-}
-
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
-  // View counter API endpoint
+  // Delegate /api/views to the serverless function handler
   if (pathname === '/api/views') {
-    let current = readViews();
-    if (parsedUrl.query.inc === '1') {
-      current += 1;
-      writeViews(current);
+    req.query = parsedUrl.query;
+    res.status = (code) => {
+      res.statusCode = code;
+      return res;
+    };
+    res.json = (data) => {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify(data));
+    };
+    try {
+      await viewsHandler(req, res);
+    } catch (err) {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: err.message }));
     }
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
-    });
-    res.end(JSON.stringify({ views: current }));
     return;
   }
 
-  // HTML page routes
+  // Rewrite / and /asset to index.html (matches vercel.json)
+  let filePath;
   if (pathname === '/' || pathname === '/asset' || pathname === '/asset/' || pathname === '/index.html') {
-    const indexPath = path.join(__dirname, 'index.html');
-    fs.readFile(indexPath, 'utf8', (err, content) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('500 Server Error');
-        return;
-      }
-
-      const host = req.headers.host || 'nighty.sex';
-      const proto = req.headers['x-forwarded-proto'] || (req.socket.encrypted ? 'https' : 'http');
-      const imageUrl = `${proto}://${host}/asset/image.png`;
-      const rendered = content.replaceAll('__IMAGE_URL__', imageUrl);
-
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(rendered);
-    });
-    return;
+    filePath = path.join(__dirname, 'index.html');
+  } else {
+    const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+    filePath = path.join(__dirname, safePath);
   }
-
-  // Static file serving
-  const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(__dirname, safePath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
