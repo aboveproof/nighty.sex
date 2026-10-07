@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/asset", "destination": "/index.html" },
     { "source": "/asset/", "destination": "/index.html" }
