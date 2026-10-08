@@ -18,20 +18,68 @@ body {
   justify-content: center;
 }
 
-/* Image Container Fitting Screen */
-.viewer-container {
+/* Continuous Marquee Viewport */
+.marquee-viewport {
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  justify-content: center;
+  position: relative;
+  background-color: #000000;
+  user-select: none;
 }
 
-.viewer-container img {
-  max-width: 100vw;
-  max-height: 100vh;
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: scroll-continuous 30s linear infinite;
+}
+
+.marquee-viewport:hover .marquee-track,
+.marquee-viewport:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding-right: 2rem;
+  flex-shrink: 0;
+}
+
+.marquee-group img {
+  height: 85vh;
   width: auto;
-  height: auto;
+  max-width: 90vw;
   object-fit: contain;
   display: block;
+  border-radius: 0;
+  border: none;
+  outline: none;
+  pointer-events: none;
 }
+
+@keyframes scroll-continuous {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-viewport {
+    overflow-x: auto;
+  }
+  .marquee-track {
+    animation: none;
+  }
+  .marquee-group[aria-hidden="true"] {
+    display: none;
+  }
+}
+

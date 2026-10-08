@@ -18,6 +18,16 @@
               "media": {
                 "url": "https://nighty.sex/asset/image.png"
               }
+            },
+            {
+              "media": {
+                "url": "https://nighty.sex/asset/image2.jpg"
+              }
+            },
+            {
+              "media": {
+                "url": "https://nighty.sex/asset/image3.jpg"
+              }
             }
           ]
         },
@@ -46,9 +56,20 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Screen-Fitting Image Container -->
-  <main class="viewer-container">
-    <img id="main-image" src="/asset/image.png" alt="Nes and Cqb in another life" />
+  <!-- Continuous Scroll Image Gallery -->
+  <main class="marquee-viewport" aria-label="Nes and Cqb continuous image gallery">
+    <div class="marquee-track">
+      <div class="marquee-group">
+        <img src="/asset/image.png" alt="Nes and Cqb - Cafe" loading="eager" />
+        <img src="/asset/image2.jpg" alt="Nes and Cqb - Proposal" loading="eager" />
+        <img src="/asset/image3.jpg" alt="Nes and Cqb - Wedding" loading="eager" />
+      </div>
+      <div class="marquee-group" aria-hidden="true">
+        <img src="/asset/image.png" alt="" loading="eager" />
+        <img src="/asset/image2.jpg" alt="" loading="eager" />
+        <img src="/asset/image3.jpg" alt="" loading="eager" />
+      </div>
+    </div>
   </main>
 </body>
 </html>
