@@ -53,4 +53,4 @@ Import the repository into Vercel. The included `vercel.json` selects a static d
 
 ## License
 
-No license file has been added yet. The gallery images may have rights separate from the site code; check that you have permission before reusing or relicensing them.
+MIT
